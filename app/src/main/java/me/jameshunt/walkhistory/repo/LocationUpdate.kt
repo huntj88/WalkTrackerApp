@@ -4,9 +4,15 @@ import androidx.room.*
 import java.time.Instant
 import java.time.format.DateTimeFormatterBuilder
 
-@Entity(primaryKeys = ["walkNumber", "timestamp"])
+@Entity
+data class Walk(
+    @PrimaryKey(autoGenerate = true) val walkId: Int = 0,
+    val json: String
+)
+
+@Entity(primaryKeys = ["walkId", "timestamp"])
 data class LocationUpdate(
-    val walkNumber: Int,
+    val walkId: Int,
     val timestamp: Instant,
     val latitude: Double,
     val longitude: Double
@@ -14,17 +20,33 @@ data class LocationUpdate(
 
 @Dao
 interface LocationUpdateDao {
-    @Query("SELECT * FROM locationupdate WHERE walkNumber = :walkNumber")
-    suspend fun getLocationDataForWalk(walkNumber: Int): List<LocationUpdate>
+    @Query("SELECT * FROM locationupdate WHERE walkId = :walkId")
+    suspend fun getLocationDataForWalk(walkId: Int): List<LocationUpdate>
 
     @Insert
     suspend fun insertAll(vararg users: LocationUpdate)
 }
 
-@Database(entities = [LocationUpdate::class], version = 1)
+@Dao
+interface WalkDao {
+    @Insert
+    suspend fun startNewWalk(walk: Walk)
+
+    @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
+    suspend fun getCurrentWalk(): Walk
+
+    @Transaction
+    suspend fun startAndGetNewWalk(json: String): Walk {
+        startNewWalk(Walk(json = json))
+        return getCurrentWalk()
+    }
+}
+
+@Database(entities = [Walk::class, LocationUpdate::class], version = 1)
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): LocationUpdateDao
+    abstract fun walkDao(): WalkDao
 }
 
 class LocalDateTimeConverter {

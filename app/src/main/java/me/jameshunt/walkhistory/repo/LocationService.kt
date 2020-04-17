@@ -31,11 +31,12 @@ class LocationService(applicationContext: Context) {
     ).build()
 
     suspend fun collectLocationData() {
+        val walkId = db.walkDao().startAndGetNewWalk("").walkId
         withContext(Dispatchers.IO) {
             while (true) {
                 val location = getLocation()
                 db.userDao().insertAll(LocationUpdate(
-                    walkNumber = 1,
+                    walkId = walkId,
                     timestamp = Instant.now(),
                     latitude = location.latitude,
                     longitude = location.longitude
