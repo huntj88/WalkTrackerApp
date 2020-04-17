@@ -10,13 +10,14 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_track_walk.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import me.jameshunt.walkhistory.repo.AppDatabase
+import org.koin.android.ext.android.inject
 import kotlin.coroutines.CoroutineContext
 
 class TrackWalkFragment : Fragment(), CoroutineScope {
+
+    private val db: AppDatabase by inject()
 
     private var coroutineJob: Job = Job()
     override val coroutineContext: CoroutineContext
@@ -33,22 +34,30 @@ class TrackWalkFragment : Fragment(), CoroutineScope {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_track_walk, container, false)
-    }
+    ): View = inflater.inflate(R.layout.fragment_track_walk, container, false)
 
     override fun onResume() {
         super.onResume()
 
         launch {
-            broadcaster.ping(
-                running = {
+            val startTimeDef = async {
+                val walkId = db.walkDao().getCurrentWalk().walkId
+                db.locationUpdateDao().getFirstLocationDataForWalk(walkId).timestamp
+            }
+
+            val isServiceRunningDef = async { broadcaster.isServiceRunning() }
+
+            val startTime = startTimeDef.await()
+            val isServiceRunning = isServiceRunningDef.await()
+
+            when (isServiceRunning) {
+                true -> {
                     button.text = "Stop"
-                },
-                notRunning = {
+                }
+                false -> {
                     button.text = "Start"
                 }
-            )
+            }
         }
 
         // TODO
@@ -63,23 +72,16 @@ class TrackWalkFragment : Fragment(), CoroutineScope {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         button.setOnClickListener {
             launch {
-                broadcaster.ping(
-                    running = {
-                        Log.d("service", "Stopping")
-                        activity?.stopService(
-                            Intent(
-                                this@TrackWalkFragment.context,
-                                WalkLocationService::class.java
-                            )
-                        )
+                when (broadcaster.isServiceRunning()) {
+                    true -> {
+                        activity?.stopLocationService()
                         button.text = "Start"
-                    },
-                    notRunning = {
-                        Log.d("service", "Starting")
+                    }
+                    false -> {
                         activity?.startLocationService()
                         button.text = "Stop"
                     }
-                )
+                }
             }
         }
     }
@@ -103,5 +105,9 @@ class TrackWalkFragment : Fragment(), CoroutineScope {
                 }
             }
         }
+    }
+
+    private fun Activity.stopLocationService() {
+        this.stopService(Intent(this@TrackWalkFragment.context, WalkLocationService::class.java))
     }
 }

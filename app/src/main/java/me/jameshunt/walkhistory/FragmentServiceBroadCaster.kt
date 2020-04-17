@@ -7,11 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 
 class FragmentServiceBroadCaster(private val activity: Activity) {
 
-    private var timeAtPing = 0L
     private var running: (() -> Unit)? = null
     private var notRunning: (() -> Unit)? = null
 
@@ -31,18 +30,23 @@ class FragmentServiceBroadCaster(private val activity: Activity) {
         activity.unregisterReceiver(broadCastNewMessage)
     }
 
-    private fun sendToService(command: String) {
-        val msgIntent = Intent()
-            .putExtra("command", command)
-            .setAction("msgToService")
-
-        activity.sendBroadcast(msgIntent)
+    suspend fun isServiceRunning(): Boolean {
+        var sup = false
+        ping(
+            running = { sup = true },
+            notRunning = { sup = false }
+        )
+        while(true) {
+            if (sup || running == null) {
+                return sup
+            }
+            delay(25)
+        }
     }
 
-    suspend fun ping(running: () -> Unit, notRunning: () -> Unit) {
+    private suspend fun ping(running: () -> Unit, notRunning: () -> Unit) {
         this.running = running
         this.notRunning = notRunning
-        timeAtPing = System.currentTimeMillis()
         sendToService("ping")
 
         // delay and notRunning might be set to null
@@ -51,14 +55,26 @@ class FragmentServiceBroadCaster(private val activity: Activity) {
         this.running = null
         this.notRunning = null
     }
+
+    private fun sendToService(command: String) {
+        val msgIntent = Intent()
+            .putExtra("command", command)
+            .setAction("msgToService")
+
+        activity.sendBroadcast(msgIntent)
+    }
 }
 
 class ServiceBroadCaster(private val service: Service) {
     private val broadCastNewMessage = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d("receive", intent.getStringExtra("command") ?: "")
+            val command = intent
+                .getStringExtra("command")
+                ?: throw IllegalArgumentException("Missing command")
 
-            when (intent.getStringExtra("command")) {
+            Log.d("receive", command)
+
+            when (command) {
                 "ping" -> sendToFragment("ping")
                 else -> TODO()
             }
