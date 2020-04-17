@@ -9,14 +9,23 @@ import android.os.IBinder
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.repo.LocationService
+import org.koin.android.ext.android.inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.KoinContextHandler
+import org.koin.core.context.startKoin
 import kotlin.coroutines.CoroutineContext
 
 
 class WalkLocationService : Service(), CoroutineScope {
 
-    private val locationService by lazy { LocationService(applicationContext) }
+    private val locationService: LocationService by inject()
+
+    private val broadcaster by lazy { ServiceBroadCaster(this) }
 
     private var coroutineJob: Job = Job()
     override val coroutineContext: CoroutineContext
@@ -48,12 +57,25 @@ class WalkLocationService : Service(), CoroutineScope {
 
     override fun onCreate() {
         super.onCreate()
+        broadcaster.register()
 
-        Log.d("service", "created")
+        KoinContextHandler.getOrNull() ?: startKoin {
+            androidContext(this@WalkLocationService)
+            modules(appModule(applicationContext))
+        }
+
+        Log.d("service", "starting")
 
         launch {
             locationService.collectLocationData()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        broadcaster.destroy()
+        coroutineJob.cancel()
+        Log.d("service", "stopping")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -23,8 +23,11 @@ interface LocationUpdateDao {
     @Query("SELECT * FROM locationupdate WHERE walkId = :walkId")
     suspend fun getLocationDataForWalk(walkId: Int): List<LocationUpdate>
 
+    @Query("SELECT * FROM locationupdate WHERE walkId = :walkId ORDER BY timestamp ASC LIMIT 1")
+    suspend fun getFirstLocationDataForWalk(walkId: Int): LocationUpdate
+
     @Insert
-    suspend fun insertAll(vararg users: LocationUpdate)
+    suspend fun insert(users: LocationUpdate)
 }
 
 @Dao
@@ -45,7 +48,7 @@ interface WalkDao {
 @Database(entities = [Walk::class, LocationUpdate::class], version = 1)
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun userDao(): LocationUpdateDao
+    abstract fun locationUpdateDao(): LocationUpdateDao
     abstract fun walkDao(): WalkDao
 }
 
