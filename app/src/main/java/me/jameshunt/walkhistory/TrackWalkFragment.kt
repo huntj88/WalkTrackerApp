@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.*
 import kotlinx.android.synthetic.main.fragment_track_walk.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.repo.AppDatabase
 import org.koin.android.viewmodel.scope.viewModel
@@ -62,34 +63,31 @@ class TrackWalkViewModel(
 
     private val serviceStatus = MutableLiveData<Boolean>()
 
-    val uiInfo = liveData {
-        val walk = db
-            .walkDao()
-            .getCurrentWalk()
 
-        val startTime = db
+    private val currentWalkInfo = db.walkDao().getCurrentWalk().mapNotNull {
+        it ?: return@mapNotNull null
+
+        val locationTimeStampInfo = db
             .locationUpdateDao()
-            .getFirstLocationDataForWalk(walk.walkId)
-            .timestamp
+            .getFirstLocationDataForWalk(it.walkId) ?: return@mapNotNull null
 
-        serviceStatus
-            .map { running ->
-                val buttonText = when(running) {
-                    true -> "Stop"
-                    false -> "Start"
-                }
-                running to buttonText
-            }
-            .map { (running, buttonText) ->
-                UIInfo(
-                    serviceRunning = running,
-                    walkId = walk.walkId,
-                    startTime = startTime,
-                    buttonText = buttonText
-                )
-            }
-            .let { emitSource(it) }
+        it.walkId to locationTimeStampInfo.timestamp
     }
+
+    val uiInfo = currentWalkInfo
+        .combine(serviceStatus.asFlow()) { (walkId, startTime), running ->
+            val buttonText = when (running) {
+                true -> "Stop"
+                false -> "Start"
+            }
+            UIInfo(
+                serviceRunning = running,
+                walkId = walkId,
+                startTime = startTime,
+                buttonText = buttonText
+            )
+        }
+        .asLiveData(viewModelScope.coroutineContext)
 
     fun updateServiceStatus(running: Boolean) {
         serviceStatus.value = running

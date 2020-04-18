@@ -2,10 +2,12 @@ package me.jameshunt.walkhistory.repo
 
 import android.os.Looper
 import android.util.Log
-import com.google.android.gms.location.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import androidx.room.withTransaction
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import kotlinx.coroutines.*
 import java.time.Instant
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -20,12 +22,13 @@ class LocationService(
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
-    suspend fun collectLocationData() {
-        val walkId = db.walkDao().startAndGetNewWalk("").walkId
-        withContext(Dispatchers.IO) {
-            while (true) {
-                val location = getLocation()
-                Log.d("location", "got location")
+    private suspend fun startNewWalk(): Int {
+        return db.withTransaction {
+            coroutineScope {
+                val locationAsync = async { getLocation() }
+                val walkId = db.walkDao().startAndGetNewWalk("").walkId
+
+                val location = locationAsync.await()
                 db.locationUpdateDao().insert(
                     LocationUpdate(
                         walkId = walkId,
@@ -34,8 +37,28 @@ class LocationService(
                         longitude = location.longitude
                     )
                 )
-                delay(10_000)
+
+                return@coroutineScope walkId
             }
+        }
+    }
+
+    suspend fun collectLocationData() {
+        val walkId = startNewWalk()
+
+        while (true) {
+            delay(10_000)
+
+            val location = getLocation()
+            Log.d("location", "got location")
+            db.locationUpdateDao().insert(
+                LocationUpdate(
+                    walkId = walkId,
+                    timestamp = Instant.now(),
+                    latitude = location.latitude,
+                    longitude = location.longitude
+                )
+            )
         }
     }
 

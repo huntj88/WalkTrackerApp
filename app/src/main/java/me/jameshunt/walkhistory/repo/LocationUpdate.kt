@@ -1,6 +1,8 @@
 package me.jameshunt.walkhistory.repo
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.format.DateTimeFormatterBuilder
 
@@ -24,7 +26,7 @@ interface LocationUpdateDao {
     suspend fun getLocationDataForWalk(walkId: Int): List<LocationUpdate>
 
     @Query("SELECT * FROM locationupdate WHERE walkId = :walkId ORDER BY timestamp ASC LIMIT 1")
-    suspend fun getFirstLocationDataForWalk(walkId: Int): LocationUpdate
+    suspend fun getFirstLocationDataForWalk(walkId: Int): LocationUpdate?
 
     @Insert
     suspend fun insert(users: LocationUpdate)
@@ -36,12 +38,12 @@ interface WalkDao {
     suspend fun startNewWalk(walk: Walk)
 
     @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
-    suspend fun getCurrentWalk(): Walk
+    fun getCurrentWalk(): Flow<Walk?>
 
     @Transaction
     suspend fun startAndGetNewWalk(json: String): Walk {
         startNewWalk(Walk(json = json))
-        return getCurrentWalk()
+        return getCurrentWalk().first()!!
     }
 }
 
