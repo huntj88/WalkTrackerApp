@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 
 abstract class ServiceAwareFragment : Fragment() {
 
-    private val broadcaster by lazy { FragmentServiceBroadCaster(this.activity!!) }
+    private val broadcaster by lazy { FragmentServiceBroadCaster(requireActivity()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

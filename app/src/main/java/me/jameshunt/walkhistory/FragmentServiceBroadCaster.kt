@@ -15,14 +15,14 @@ import kotlinx.coroutines.*
 
 class FragmentServiceBroadCaster(private val activity: Activity) {
 
-    private var running: (() -> Unit)? = null
-    private var notRunning: (() -> Unit)? = null
+    private var onRunning: (() -> Unit)? = null
+    private var onNotRunning: (() -> Unit)? = null
 
     private val broadCastNewMessage = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            running?.let { it() }
-            running = null
-            notRunning = null
+            onRunning?.let { it() }
+            onRunning = null
+            onNotRunning = null
         }
     }
 
@@ -35,30 +35,30 @@ class FragmentServiceBroadCaster(private val activity: Activity) {
     }
 
     suspend fun isServiceRunning(): Boolean {
-        var sup = false
+        var isRunning = false
         ping(
-            running = { sup = true },
-            notRunning = { sup = false }
+            running = { isRunning = true },
+            notRunning = { isRunning = false }
         )
         while(true) {
-            if (sup || running == null) {
-                return sup
+            if (isRunning || onRunning == null) {
+                return isRunning
             }
             delay(25)
         }
     }
 
     private suspend fun ping(running: () -> Unit, notRunning: () -> Unit) {
-        this.running = running
-        this.notRunning = notRunning
+        onRunning = running
+        onNotRunning = notRunning
         sendToService("ping")
 
-        // delay so that notRunning might be set to null, and not be run
-        // if null, then running() was called
+        // delay so that onNotRunning might be set to null, and not be run
+        // if null, then onRunning() was called
         delay(1000)
-        this.notRunning?.let { it() }
-        this.running = null
-        this.notRunning = null
+        onNotRunning?.let { it() }
+        onRunning = null
+        onNotRunning = null
     }
 
     private fun sendToService(command: String) {

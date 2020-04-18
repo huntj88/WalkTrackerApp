@@ -37,7 +37,7 @@ interface WalkDao {
     suspend fun startNewWalk(walk: Walk)
 
     @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
-    fun getNewWalk(): Walk
+    suspend fun getNewWalk(): Walk
 
     @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
     fun getCurrentWalk(): Flow<Walk?>

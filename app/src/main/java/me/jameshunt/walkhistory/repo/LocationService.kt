@@ -41,24 +41,22 @@ class LocationService(
         }
     }
 
-    private suspend fun startNewWalk(): Int {
-        return coroutineScope {
-            val locationAsync = async { getLocation() }
-            db.withTransaction {
-                val walkId = db.walkDao().startAndGetNewWalk("").walkId
+    private suspend fun startNewWalk(): Int = coroutineScope {
+        val locationAsync = async { getLocation() }
+        db.withTransaction {
+            val walkId = db.walkDao().startAndGetNewWalk("").walkId
 
-                val location = locationAsync.await()
-                db.locationTimestampDao().insert(
-                    LocationTimestamp(
-                        walkId = walkId,
-                        timestamp = Instant.now(),
-                        latitude = location.latitude,
-                        longitude = location.longitude
-                    )
+            val location = locationAsync.await()
+            db.locationTimestampDao().insert(
+                LocationTimestamp(
+                    walkId = walkId,
+                    timestamp = Instant.now(),
+                    latitude = location.latitude,
+                    longitude = location.longitude
                 )
+            )
 
-                return@withTransaction walkId
-            }
+            return@withTransaction walkId
         }
     }
 
