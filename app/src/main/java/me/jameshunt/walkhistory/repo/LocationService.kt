@@ -22,27 +22,6 @@ class LocationService(
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
-    private suspend fun startNewWalk(): Int {
-        return db.withTransaction {
-            coroutineScope {
-                val locationAsync = async { getLocation() }
-                val walkId = db.walkDao().startAndGetNewWalk("").walkId
-
-                val location = locationAsync.await()
-                db.locationUpdateDao().insert(
-                    LocationUpdate(
-                        walkId = walkId,
-                        timestamp = Instant.now(),
-                        latitude = location.latitude,
-                        longitude = location.longitude
-                    )
-                )
-
-                return@coroutineScope walkId
-            }
-        }
-    }
-
     suspend fun collectLocationData() {
         val walkId = startNewWalk()
 
@@ -51,14 +30,35 @@ class LocationService(
 
             val location = getLocation()
             Log.d("location", "got location")
-            db.locationUpdateDao().insert(
-                LocationUpdate(
+            db.locationTimestampDao().insert(
+                LocationTimestamp(
                     walkId = walkId,
                     timestamp = Instant.now(),
                     latitude = location.latitude,
                     longitude = location.longitude
                 )
             )
+        }
+    }
+
+    private suspend fun startNewWalk(): Int {
+        return coroutineScope {
+            val locationAsync = async { getLocation() }
+            db.withTransaction {
+                val walkId = db.walkDao().startAndGetNewWalk("").walkId
+
+                val location = locationAsync.await()
+                db.locationTimestampDao().insert(
+                    LocationTimestamp(
+                        walkId = walkId,
+                        timestamp = Instant.now(),
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                )
+
+                return@withTransaction walkId
+            }
         }
     }
 

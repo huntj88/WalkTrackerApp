@@ -2,7 +2,6 @@ package me.jameshunt.walkhistory.repo
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.format.DateTimeFormatterBuilder
 
@@ -13,7 +12,7 @@ data class Walk(
 )
 
 @Entity(primaryKeys = ["walkId", "timestamp"])
-data class LocationUpdate(
+data class LocationTimestamp(
     val walkId: Int,
     val timestamp: Instant,
     val latitude: Double,
@@ -21,15 +20,15 @@ data class LocationUpdate(
 )
 
 @Dao
-interface LocationUpdateDao {
-    @Query("SELECT * FROM locationupdate WHERE walkId = :walkId")
-    suspend fun getLocationDataForWalk(walkId: Int): List<LocationUpdate>
+interface LocationTimestampDao {
+    @Query("SELECT * FROM locationtimestamp WHERE walkId = :walkId")
+    suspend fun getLocationTimestampForWalk(walkId: Int): List<LocationTimestamp>
 
-    @Query("SELECT * FROM locationupdate WHERE walkId = :walkId ORDER BY timestamp ASC LIMIT 1")
-    suspend fun getFirstLocationDataForWalk(walkId: Int): LocationUpdate?
+    @Query("SELECT * FROM locationtimestamp WHERE walkId = :walkId ORDER BY timestamp ASC LIMIT 1")
+    suspend fun getInitialLocationTimestamp(walkId: Int): LocationTimestamp
 
     @Insert
-    suspend fun insert(users: LocationUpdate)
+    suspend fun insert(data: LocationTimestamp)
 }
 
 @Dao
@@ -38,19 +37,22 @@ interface WalkDao {
     suspend fun startNewWalk(walk: Walk)
 
     @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
+    fun getNewWalk(): Walk
+
+    @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
     fun getCurrentWalk(): Flow<Walk?>
 
     @Transaction
     suspend fun startAndGetNewWalk(json: String): Walk {
         startNewWalk(Walk(json = json))
-        return getCurrentWalk().first()!!
+        return getNewWalk()
     }
 }
 
-@Database(entities = [Walk::class, LocationUpdate::class], version = 1)
+@Database(entities = [Walk::class, LocationTimestamp::class], version = 1)
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun locationUpdateDao(): LocationUpdateDao
+    abstract fun locationTimestampDao(): LocationTimestampDao
     abstract fun walkDao(): WalkDao
 }
 

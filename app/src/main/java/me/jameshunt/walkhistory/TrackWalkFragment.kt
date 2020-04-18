@@ -68,8 +68,8 @@ class TrackWalkViewModel(
         it ?: return@mapNotNull null
 
         val locationTimeStampInfo = db
-            .locationUpdateDao()
-            .getFirstLocationDataForWalk(it.walkId) ?: return@mapNotNull null
+            .locationTimestampDao()
+            .getInitialLocationTimestamp(it.walkId)
 
         it.walkId to locationTimeStampInfo.timestamp
     }
