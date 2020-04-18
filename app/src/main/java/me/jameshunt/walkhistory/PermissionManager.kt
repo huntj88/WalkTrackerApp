@@ -16,18 +16,13 @@ class PermissionManager(private val context: Activity) {
     fun onLocationGranted(action: (PermissionResult) -> Unit) {
         if(canUseLocation()) {
             action(PermissionResult.Granted)
-            return
+        } else {
+            context.showDialogIfPossible(permission.ACCESS_FINE_LOCATION)
+            onLocationGrant = action
         }
-        onLocationGrant = action
     }
 
-    private fun canUseLocation(): Boolean {
-        val isGranted = context.isGranted(permission.ACCESS_FINE_LOCATION)
-        if (isGranted) return true
-
-        context.showDialogIfPossible(permission.ACCESS_FINE_LOCATION)
-        return context.isGranted(permission.ACCESS_FINE_LOCATION)
-    }
+    fun canUseLocation(): Boolean = context.isGranted(permission.ACCESS_FINE_LOCATION)
 
     fun onRequestPermissionsResult(permissions: Array<String>, grantResults: IntArray) {
         permissions

@@ -17,10 +17,11 @@ import org.koin.android.scope.lifecycleScope as kLifecycleScope
 class TrackWalkFragment : ServiceAwareFragment() {
 
     private val viewModel by kLifecycleScope.viewModel<TrackWalkViewModel>(this)
+    private var canUseLocation: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println(viewModel)
+        canUseLocation = requireActivity().permissionManager().canUseLocation()
     }
 
     override fun onCreateView(
@@ -32,19 +33,24 @@ class TrackWalkFragment : ServiceAwareFragment() {
     override fun onResume() {
         super.onResume()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.updateServiceStatus(isServiceRunning())
+        ifPermissionUpdateService {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.updateServiceStatus(isServiceRunning())
+            }
         }
 
         viewModel.uiInfo.observe(this) {
             button.text = it.buttonText
-
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if(!canUseLocation) {
+            button.text = "Start"
+        }
         button.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
+                button.text = "Working on it"
                 val serviceRunning = isServiceRunning()
                 when (serviceRunning) {
                     true -> activity?.stopLocationService()
@@ -52,6 +58,14 @@ class TrackWalkFragment : ServiceAwareFragment() {
                 }
                 viewModel.updateServiceStatus(!serviceRunning)
             }
+        }
+    }
+
+    private fun ifPermissionUpdateService(action: () -> Unit) {
+        if(canUseLocation) {
+            action()
+        } else if(requireActivity().permissionManager().canUseLocation()) {
+            canUseLocation = true
         }
     }
 }
