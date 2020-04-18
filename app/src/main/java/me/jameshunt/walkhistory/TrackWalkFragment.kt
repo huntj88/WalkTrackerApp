@@ -1,14 +1,9 @@
 package me.jameshunt.walkhistory
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import kotlinx.android.synthetic.main.fragment_track_walk.*
 import kotlinx.coroutines.launch
@@ -17,44 +12,6 @@ import org.koin.android.viewmodel.scope.viewModel
 import java.time.Instant
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
-abstract class ServiceAwareFragment : Fragment() {
-
-    private val broadcaster by lazy { FragmentServiceBroadCaster(this.activity!!) }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        broadcaster.register()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        broadcaster.destroy()
-    }
-
-    suspend fun isServiceRunning(): Boolean {
-        return broadcaster.isServiceRunning()
-    }
-
-    fun Activity.startLocationService() {
-        permissionManager().onLocationGranted {
-            when (it) {
-                PermissionResult.Granted -> {
-                    ContextCompat.startForegroundService(
-                        this,
-                        Intent(this, WalkLocationService::class.java)
-                    )
-                }
-                PermissionResult.Denied -> {
-                    // TODO: take them to a screen to go to permissions in android settings
-                }
-            }
-        }
-    }
-
-    fun Activity.stopLocationService() {
-        this.stopService(Intent(this@ServiceAwareFragment.context, WalkLocationService::class.java))
-    }
-}
 
 class TrackWalkFragment : ServiceAwareFragment() {
 
@@ -75,18 +32,12 @@ class TrackWalkFragment : ServiceAwareFragment() {
         super.onResume()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.updateServiceStatus(isServiceRunning(), shouldStartOrStop = false)
+            viewModel.updateServiceStatus(isServiceRunning())
         }
 
         viewModel.uiInfo.observe(this) {
             button.text = it.buttonText
 
-            if(it.shouldStartOrStop) {
-                when (it.serviceRunning) {
-                    true -> activity?.stopLocationService()
-                    false -> activity?.startLocationService()
-                }
-            }
         }
     }
 
@@ -94,8 +45,11 @@ class TrackWalkFragment : ServiceAwareFragment() {
         button.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
                 val serviceRunning = isServiceRunning()
-
-                viewModel.updateServiceStatus(serviceRunning, shouldStartOrStop = true)
+                when (serviceRunning) {
+                    true -> activity?.stopLocationService()
+                    false -> activity?.startLocationService()
+                }
+                viewModel.updateServiceStatus(!serviceRunning)
             }
         }
     }
@@ -106,7 +60,7 @@ class TrackWalkViewModel(
     private val db: AppDatabase
 ) : ViewModel() {
 
-    private val serviceStatus = MutableLiveData<Pair<Boolean, Boolean>>()
+    private val serviceStatus = MutableLiveData<Boolean>()
 
     val uiInfo = liveData {
         val walk = db
@@ -119,17 +73,16 @@ class TrackWalkViewModel(
             .timestamp
 
         serviceStatus
-            .map { (running, shouldStartOrStop) ->
-                val buttonText = when (running) {
+            .map { running ->
+                val buttonText = when(running) {
                     true -> "Stop"
                     false -> "Start"
                 }
-                Triple(running, shouldStartOrStop, buttonText)
+                running to buttonText
             }
-            .map { (running, shouldStartOrStop, buttonText) ->
+            .map { (running, buttonText) ->
                 UIInfo(
                     serviceRunning = running,
-                    shouldStartOrStop = shouldStartOrStop,
                     walkId = walk.walkId,
                     startTime = startTime,
                     buttonText = buttonText
@@ -138,14 +91,13 @@ class TrackWalkViewModel(
             .let { emitSource(it) }
     }
 
-    fun updateServiceStatus(running: Boolean, shouldStartOrStop: Boolean) {
-        serviceStatus.value = running to shouldStartOrStop
+    fun updateServiceStatus(running: Boolean) {
+        serviceStatus.value = running
     }
 }
 
 data class UIInfo(
     val serviceRunning: Boolean,
-    val shouldStartOrStop: Boolean,
     val walkId: Int,
     val startTime: Instant,
     val buttonText: String

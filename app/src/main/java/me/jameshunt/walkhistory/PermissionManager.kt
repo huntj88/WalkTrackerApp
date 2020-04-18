@@ -63,7 +63,7 @@ class PermissionManager(private val context: Activity) {
                     .setCancelable(true)
                     .setTitle("Permission necessary")
                     .setMessage("Location required to track walk")
-                    .setPositiveButton("Got it") { dialog, which ->
+                    .setPositiveButton("Got it") { _, _ ->
                         ActivityCompat.requestPermissions(
                             this@showDialogIfPossible,
                             arrayOf(permissionString),

@@ -44,13 +44,13 @@ class WalkLocationService : Service(), CoroutineScope {
             this,
             0, notificationIntent, 0
         )
-        //Build a notification
         val notification: Notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Walk Tracker Service")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
             .build()
-        //A notification HAS to be passed for the foreground service to be started.
+
+        // A notification HAS to be passed for the foreground service to be started.
         startForeground(1, notification)
         return START_STICKY
     }

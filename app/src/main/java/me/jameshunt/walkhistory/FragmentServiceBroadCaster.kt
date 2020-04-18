@@ -9,6 +9,10 @@ import android.content.IntentFilter
 import android.util.Log
 import kotlinx.coroutines.*
 
+/**
+ * Two way broadcasts to allow fragments to "ping" the Service to see if its running
+ */
+
 class FragmentServiceBroadCaster(private val activity: Activity) {
 
     private var running: (() -> Unit)? = null
