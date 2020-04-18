@@ -1,6 +1,5 @@
 package me.jameshunt.walkhistory
 
-import android.Manifest
 import android.Manifest.*
 import android.app.Activity
 import android.content.Context

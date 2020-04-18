@@ -49,7 +49,8 @@ class FragmentServiceBroadCaster(private val activity: Activity) {
         this.notRunning = notRunning
         sendToService("ping")
 
-        // delay and notRunning might be set to null
+        // delay so that notRunning might be set to null, and not be run
+        // if null, then running() was called
         delay(1000)
         this.notRunning?.let { it() }
         this.running = null

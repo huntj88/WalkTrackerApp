@@ -7,8 +7,10 @@ import com.google.android.gms.location.LocationServices
 import me.jameshunt.walkhistory.repo.AppDatabase
 import me.jameshunt.walkhistory.repo.LocationService
 import org.koin.android.ext.koin.androidContext
+import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 class WalkTrackerApplication : Application() {
@@ -17,7 +19,14 @@ class WalkTrackerApplication : Application() {
         super.onCreate()
         startKoin {
             androidContext(this@WalkTrackerApplication)
-            modules(appModule(applicationContext))
+
+            val fragmentModule = module {
+                scope(named<TrackWalkFragment>()) {
+                    viewModel { TrackWalkViewModel(get()) }
+                }
+            }
+
+            modules(appModule(applicationContext), fragmentModule)
         }
     }
 }
