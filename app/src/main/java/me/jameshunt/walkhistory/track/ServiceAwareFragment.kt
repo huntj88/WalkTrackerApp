@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 
 abstract class ServiceAwareFragment : Fragment() {
 
-    private val broadcaster by lazy { FragmentServiceBroadCaster(requireActivity()) }
+    private val broadcaster by lazy { FragmentBroadCaster(requireActivity()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +30,7 @@ abstract class ServiceAwareFragment : Fragment() {
                 PermissionResult.Granted -> {
                     ContextCompat.startForegroundService(
                         this,
-                        Intent(this, WalkLocationService::class.java)
+                        Intent(this, TrackerForegroundService::class.java)
                     )
                 }
                 PermissionResult.Denied -> {
@@ -41,6 +41,9 @@ abstract class ServiceAwareFragment : Fragment() {
     }
 
     fun Activity.stopLocationService() {
-        this.stopService(Intent(this@ServiceAwareFragment.context, WalkLocationService::class.java))
+        this.stopService(Intent(
+            this@ServiceAwareFragment.context,
+            TrackerForegroundService::class.java
+        ))
     }
 }

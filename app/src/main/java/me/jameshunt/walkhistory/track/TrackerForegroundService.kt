@@ -23,11 +23,11 @@ import org.koin.core.context.startKoin
 import kotlin.coroutines.CoroutineContext
 
 
-class WalkLocationService : Service(), CoroutineScope {
+class TrackerForegroundService : Service(), CoroutineScope {
 
-    private val locationService: LocationService by inject()
+    private val locationCollector: LocationCollector by inject()
 
-    private val broadcaster by lazy { ServiceBroadCaster(this) }
+    private val broadcaster by lazy { AndroidServiceBroadCaster(this) }
 
     private var coroutineJob: Job = Job()
     override val coroutineContext: CoroutineContext
@@ -62,14 +62,14 @@ class WalkLocationService : Service(), CoroutineScope {
         broadcaster.register()
 
         KoinContextHandler.getOrNull() ?: startKoin {
-            androidContext(this@WalkLocationService)
+            androidContext(this@TrackerForegroundService)
             modules(appModule(applicationContext))
         }
 
         Log.d("service", "starting")
 
         launch {
-            locationService.collectLocationData()
+            locationCollector.collectLocationData()
         }
     }
 

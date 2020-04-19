@@ -9,7 +9,7 @@ import me.jameshunt.walkhistory.map.MapWrapperViewModel
 import me.jameshunt.walkhistory.map.WalkHistoryFragment
 import me.jameshunt.walkhistory.map.WalkHistoryViewModel
 import me.jameshunt.walkhistory.repo.AppDatabase
-import me.jameshunt.walkhistory.track.LocationService
+import me.jameshunt.walkhistory.track.LocationCollector
 import me.jameshunt.walkhistory.map.SelectedWalkService
 import me.jameshunt.walkhistory.track.TrackWalkFragment
 import me.jameshunt.walkhistory.track.TrackWalkViewModel
@@ -48,7 +48,7 @@ fun appModule(applicationContext: Context): Module {
 
         single { SelectedWalkService(get()) }
         single { LocationServices.getFusedLocationProviderClient(applicationContext) }
-        single { LocationService(get(), get()) }
+        single { LocationCollector(get(), get()) }
     }
 }
 

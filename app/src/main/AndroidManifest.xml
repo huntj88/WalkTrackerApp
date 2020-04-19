@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".track.WalkLocationService"
+            android:name=".track.TrackerForegroundService"
             android:foregroundServiceType="location" />
 
     </application>

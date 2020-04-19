@@ -13,7 +13,7 @@ import kotlinx.coroutines.*
  * Two way broadcasts to allow fragments to "ping" the Service to see if its running
  */
 
-class FragmentServiceBroadCaster(private val activity: Activity) {
+class FragmentBroadCaster(private val activity: Activity) {
 
     private var onRunning: (() -> Unit)? = null
     private var onNotRunning: (() -> Unit)? = null
@@ -40,7 +40,7 @@ class FragmentServiceBroadCaster(private val activity: Activity) {
             running = { isRunning = true },
             notRunning = { isRunning = false }
         )
-        while(true) {
+        while (true) {
             if (isRunning || onRunning == null) {
                 return isRunning
             }
@@ -70,7 +70,7 @@ class FragmentServiceBroadCaster(private val activity: Activity) {
     }
 }
 
-class ServiceBroadCaster(private val service: Service) {
+class AndroidServiceBroadCaster(private val service: Service) {
     private val broadCastNewMessage = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val command = intent

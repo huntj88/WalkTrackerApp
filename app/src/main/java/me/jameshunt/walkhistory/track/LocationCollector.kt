@@ -14,7 +14,7 @@ import java.time.Instant
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class LocationService(
+class LocationCollector(
     private val db: AppDatabase,
     private val locationClient: FusedLocationProviderClient
 ) {

@@ -11,8 +11,7 @@ import me.jameshunt.walkhistory.track.TrackWalkFragment
 
 class MainActivity : AppCompatActivity() {
 
-    val permissionManager =
-        PermissionManager(this)
+    val permissionManager = PermissionManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
