@@ -20,13 +20,11 @@ class WalkTrackerApplication : Application() {
         startKoin {
             androidContext(this@WalkTrackerApplication)
 
-            val fragmentModule = module {
-                scope(named<TrackWalkFragment>()) {
-                    viewModel { TrackWalkViewModel(get()) }
-                }
-            }
-
-            modules(appModule(applicationContext), fragmentModule)
+            modules(
+                appModule(applicationContext),
+                trackWalkFragmentModule(),
+                mapWrapperFragmentModule()
+            )
         }
     }
 }
@@ -42,5 +40,17 @@ fun appModule(applicationContext: Context): Module {
 
         single { LocationServices.getFusedLocationProviderClient(applicationContext) }
         single { LocationService(get(), get()) }
+    }
+}
+
+fun trackWalkFragmentModule() = module {
+    scope(named<TrackWalkFragment>()) {
+        viewModel { TrackWalkViewModel(get()) }
+    }
+}
+
+fun mapWrapperFragmentModule() = module {
+    scope(named<MapWrapperFragment>()) {
+        viewModel { MapWrapperViewModel(get()) }
     }
 }

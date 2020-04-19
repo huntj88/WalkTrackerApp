@@ -46,6 +46,8 @@ class LocationService(
         db.withTransaction {
             val walkId = db.walkDao().startAndGetNewWalk("").walkId
 
+            Log.d("starting walk", "$walkId")
+
             val location = locationAsync.await()
             db.locationTimestampDao().insert(
                 LocationTimestamp(

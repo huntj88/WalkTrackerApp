@@ -22,7 +22,7 @@ data class LocationTimestamp(
 @Dao
 interface LocationTimestampDao {
     @Query("SELECT * FROM locationtimestamp WHERE walkId = :walkId")
-    suspend fun getLocationTimestampForWalk(walkId: Int): List<LocationTimestamp>
+    suspend fun getLocationTimestampsForWalk(walkId: Int): List<LocationTimestamp>
 
     @Query("SELECT * FROM locationtimestamp WHERE walkId = :walkId ORDER BY timestamp ASC LIMIT 1")
     suspend fun getInitialLocationTimestamp(walkId: Int): LocationTimestamp
