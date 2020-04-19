@@ -19,13 +19,14 @@ class MainActivity : AppCompatActivity() {
             override fun createFragment(position: Int): Fragment {
                 return when (position) {
                     0 -> TrackWalkFragment()
-                    1 -> MapWrapperFragment()
+                    1 -> WalkHistoryFragment()
+                    2 -> MapWrapperFragment()
                     else -> throw IllegalStateException()
                 }
             }
 
             override fun getItemCount(): Int {
-                return 2
+                return 3
             }
         }
     }

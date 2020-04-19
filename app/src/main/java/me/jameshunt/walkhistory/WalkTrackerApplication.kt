@@ -23,6 +23,7 @@ class WalkTrackerApplication : Application() {
             modules(
                 appModule(applicationContext),
                 trackWalkFragmentModule(),
+                walkHistoryFragmentModule(),
                 mapWrapperFragmentModule()
             )
         }
@@ -46,6 +47,12 @@ fun appModule(applicationContext: Context): Module {
 fun trackWalkFragmentModule() = module {
     scope(named<TrackWalkFragment>()) {
         viewModel { TrackWalkViewModel(get()) }
+    }
+}
+
+fun walkHistoryFragmentModule() = module {
+    scope(named<WalkHistoryFragment>()) {
+        viewModel { WalkHistoryViewModel(get()) }
     }
 }
 

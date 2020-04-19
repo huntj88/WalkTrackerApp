@@ -17,12 +17,10 @@ import me.jameshunt.walkhistory.repo.AppDatabase
 import org.koin.android.viewmodel.scope.viewModel
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
-
-private const val zoomLevel = 13f
-
 class MapWrapperFragment : Fragment() {
 
-    private val viewModel by kLifecycleScope.viewModel<MapWrapperViewModel>(this)
+    // TODO: do not expose, make private
+    val viewModel by kLifecycleScope.viewModel<MapWrapperViewModel>(this)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +42,8 @@ class MapWrapperFragment : Fragment() {
         viewModel.coordinatesForSelectedWalk.observe(this) { locations ->
             mapFragment.getMapAsync { map ->
                 map ?: return@getMapAsync
+
+                map.clear()
                 val path: List<LatLng> = locations.map { LatLng(it.latitude, it.longitude) }
 
                 if (path.isNotEmpty()) {
@@ -56,7 +56,7 @@ class MapWrapperFragment : Fragment() {
 
                     map.addMarker(MarkerOptions().position(path.first()))
                     map.addMarker(MarkerOptions().position(path.last()))
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(path.first(), zoomLevel))
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(path.first(), 16f))
                 }
 
                 map.uiSettings.isZoomControlsEnabled = true
@@ -64,7 +64,7 @@ class MapWrapperFragment : Fragment() {
         }
 
         // hardcoded walkId
-        viewModel.setSelectedWalk(2)
+        viewModel.setSelectedWalk(1)
     }
 
     private fun getExistingMapFragment(): SupportMapFragment? {

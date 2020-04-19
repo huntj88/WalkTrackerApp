@@ -11,7 +11,15 @@ data class Walk(
     val json: String
 )
 
-@Entity(primaryKeys = ["walkId", "timestamp"])
+@Entity(
+    primaryKeys = ["walkId", "timestamp"], foreignKeys = [
+        ForeignKey(
+            entity = Walk::class,
+            parentColumns = ["walkId"],
+            childColumns = ["walkId"]
+        )
+    ]
+)
 data class LocationTimestamp(
     val walkId: Int,
     val timestamp: Instant,
@@ -39,15 +47,32 @@ interface WalkDao {
     @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
     suspend fun getNewWalk(): Walk
 
-    @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
-    fun getCurrentWalk(): Flow<Walk?>
-
     @Transaction
     suspend fun startAndGetNewWalk(json: String): Walk {
         startNewWalk(Walk(json = json))
         return getNewWalk()
     }
+
+
+    @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
+    fun getCurrentWalk(): Flow<Walk?>
+
+    @Query(
+        """
+        SELECT walkId, json, min(timestamp) AS timestamp FROM walk 
+        JOIN locationtimestamp USING(walkId) 
+        GROUP BY walkId 
+        ORDER BY walkId DESC
+        """
+    )
+    suspend fun getWalksWithStartTime(): List<WalkWithTime>
 }
+
+data class WalkWithTime(
+    val walkId: Int,
+    val json: String,
+    val timestamp: Instant
+)
 
 @Database(entities = [Walk::class, LocationTimestamp::class], version = 1)
 @TypeConverters(LocalDateTimeConverter::class)

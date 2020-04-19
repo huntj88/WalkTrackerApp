@@ -75,15 +75,17 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 
     private val serviceStatus = MutableLiveData<Boolean>()
 
-    private val currentWalkInfo = db.walkDao().getCurrentWalk().mapNotNull {
-        it ?: return@mapNotNull null
+    private val currentWalkInfo = db
+        .walkDao()
+        .getCurrentWalk()
+        .mapNotNull { it }
+        .mapNotNull {
+            val locationTimeStampInfo = db
+                .locationTimestampDao()
+                .getInitialLocationTimestamp(it.walkId)
 
-        val locationTimeStampInfo = db
-            .locationTimestampDao()
-            .getInitialLocationTimestamp(it.walkId)
-
-        it.walkId to locationTimeStampInfo.timestamp
-    }
+            it.walkId to locationTimeStampInfo.timestamp
+        }
 
     val uiInfo = currentWalkInfo
         .combine(serviceStatus.asFlow()) { (walkId, startTime), running ->
