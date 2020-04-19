@@ -45,7 +45,7 @@ class TrackWalkFragment : ServiceAwareFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if(!canUseLocation) {
+        if (!canUseLocation) {
             button.text = "Start"
         }
         button.setOnClickListener {
@@ -62,21 +62,18 @@ class TrackWalkFragment : ServiceAwareFragment() {
     }
 
     private fun ifPermissionUpdateService(action: () -> Unit) {
-        if(canUseLocation) {
+        if (canUseLocation) {
             action()
-        } else if(requireActivity().permissionManager().canUseLocation()) {
+        } else if (requireActivity().permissionManager().canUseLocation()) {
             canUseLocation = true
         }
     }
 }
 
 
-class TrackWalkViewModel(
-    private val db: AppDatabase
-) : ViewModel() {
+class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 
     private val serviceStatus = MutableLiveData<Boolean>()
-
 
     private val currentWalkInfo = db.walkDao().getCurrentWalk().mapNotNull {
         it ?: return@mapNotNull null
