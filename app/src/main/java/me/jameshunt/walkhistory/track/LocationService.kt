@@ -1,4 +1,4 @@
-package me.jameshunt.walkhistory.repo
+package me.jameshunt.walkhistory.track
 
 import android.os.Looper
 import android.util.Log
@@ -8,6 +8,8 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import kotlinx.coroutines.*
+import me.jameshunt.walkhistory.repo.AppDatabase
+import me.jameshunt.walkhistory.repo.LocationTimestamp
 import java.time.Instant
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

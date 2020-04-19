@@ -1,23 +1,23 @@
-package me.jameshunt.walkhistory
+package me.jameshunt.walkhistory.map
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.repo.AppDatabase
 import me.jameshunt.walkhistory.repo.WalkWithTime
 import org.koin.android.viewmodel.scope.viewModel
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
-// TODO: Make into mostly full screen dialog fragment
-class WalkHistoryFragment : Fragment() {
+class WalkHistoryFragment : DialogFragment() {
 
     private val viewModel by kLifecycleScope.viewModel<WalkHistoryViewModel>(this)
 
@@ -57,11 +57,8 @@ class WalkHistoryFragment : Fragment() {
                     val walkWithTime = walks[position]
                     text = walkWithTime.run { "$walkId: $timestamp" }
                     setOnClickListener {
-                        val mapFragment = fragmentManager
-                            ?.fragments
-                            ?.find { it is MapWrapperFragment } as MapWrapperFragment
-
-                        mapFragment.viewModel.setSelectedWalk(walkWithTime.walkId)
+                        viewModel.setSelectedWalk(walkWithTime.walkId)
+                        dismiss()
                     }
                 }
             }
@@ -69,7 +66,10 @@ class WalkHistoryFragment : Fragment() {
     }
 }
 
-class WalkHistoryViewModel(private val db: AppDatabase) : ViewModel() {
+class WalkHistoryViewModel(
+    private val db: AppDatabase,
+    private val selectedWalkService: SelectedWalkService
+) : ViewModel() {
 
     val walkHistory = db
         .walkDao()
@@ -77,4 +77,10 @@ class WalkHistoryViewModel(private val db: AppDatabase) : ViewModel() {
         .mapNotNull { it }
         .map { db.walkDao().getWalksWithStartTime() }
         .asLiveData(viewModelScope.coroutineContext)
+
+    fun setSelectedWalk(walkId: Int) {
+        viewModelScope.launch {
+            selectedWalkService.setSelected(walkId)
+        }
+    }
 }

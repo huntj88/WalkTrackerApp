@@ -1,4 +1,4 @@
-package me.jameshunt.walkhistory
+package me.jameshunt.walkhistory.track
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,6 +8,7 @@ import androidx.lifecycle.*
 import kotlinx.android.synthetic.main.fragment_track_walk.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
 import org.koin.android.viewmodel.scope.viewModel
 import java.time.Instant
@@ -38,10 +39,6 @@ class TrackWalkFragment : ServiceAwareFragment() {
                 viewModel.updateServiceStatus(isServiceRunning())
             }
         }
-
-        viewModel.uiInfo.observe(this) {
-            button.text = it.buttonText
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,6 +55,10 @@ class TrackWalkFragment : ServiceAwareFragment() {
                 }
                 viewModel.updateServiceStatus(!serviceRunning)
             }
+        }
+
+        viewModel.uiInfo.observe(this) {
+            button.text = it.buttonText
         }
     }
 

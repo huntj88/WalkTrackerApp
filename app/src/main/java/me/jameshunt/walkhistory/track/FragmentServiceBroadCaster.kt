@@ -1,4 +1,4 @@
-package me.jameshunt.walkhistory
+package me.jameshunt.walkhistory.track
 
 import android.app.Activity
 import android.app.Service

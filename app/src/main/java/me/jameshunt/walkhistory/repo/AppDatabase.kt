@@ -45,12 +45,12 @@ interface WalkDao {
     suspend fun startNewWalk(walk: Walk)
 
     @Query("SELECT * FROM walk ORDER BY walkId DESC LIMIT 1")
-    suspend fun getNewWalk(): Walk
+    suspend fun getNewestWalk(): Walk
 
     @Transaction
     suspend fun startAndGetNewWalk(json: String): Walk {
         startNewWalk(Walk(json = json))
-        return getNewWalk()
+        return getNewestWalk()
     }
 
 

@@ -1,4 +1,4 @@
-package me.jameshunt.walkhistory
+package me.jameshunt.walkhistory.track
 
 import android.Manifest.*
 import android.app.Activity
@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import me.jameshunt.walkhistory.MainActivity
 
 
 class PermissionManager(private val context: Activity) {

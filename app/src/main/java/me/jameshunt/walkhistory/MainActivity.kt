@@ -5,10 +5,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import me.jameshunt.walkhistory.map.MapWrapperFragment
+import me.jameshunt.walkhistory.track.PermissionManager
+import me.jameshunt.walkhistory.track.TrackWalkFragment
 
 class MainActivity : AppCompatActivity() {
 
-    val permissionManager = PermissionManager(this)
+    val permissionManager =
+        PermissionManager(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,14 +23,13 @@ class MainActivity : AppCompatActivity() {
             override fun createFragment(position: Int): Fragment {
                 return when (position) {
                     0 -> TrackWalkFragment()
-                    1 -> WalkHistoryFragment()
-                    2 -> MapWrapperFragment()
+                    1 -> MapWrapperFragment()
                     else -> throw IllegalStateException()
                 }
             }
 
             override fun getItemCount(): Int {
-                return 3
+                return 2
             }
         }
     }

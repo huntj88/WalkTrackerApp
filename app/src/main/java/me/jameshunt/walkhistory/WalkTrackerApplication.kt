@@ -4,8 +4,15 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.google.android.gms.location.LocationServices
+import me.jameshunt.walkhistory.map.MapWrapperFragment
+import me.jameshunt.walkhistory.map.MapWrapperViewModel
+import me.jameshunt.walkhistory.map.WalkHistoryFragment
+import me.jameshunt.walkhistory.map.WalkHistoryViewModel
 import me.jameshunt.walkhistory.repo.AppDatabase
-import me.jameshunt.walkhistory.repo.LocationService
+import me.jameshunt.walkhistory.track.LocationService
+import me.jameshunt.walkhistory.map.SelectedWalkService
+import me.jameshunt.walkhistory.track.TrackWalkFragment
+import me.jameshunt.walkhistory.track.TrackWalkViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -39,6 +46,7 @@ fun appModule(applicationContext: Context): Module {
             ).build()
         }
 
+        single { SelectedWalkService(get()) }
         single { LocationServices.getFusedLocationProviderClient(applicationContext) }
         single { LocationService(get(), get()) }
     }
@@ -52,12 +60,12 @@ fun trackWalkFragmentModule() = module {
 
 fun walkHistoryFragmentModule() = module {
     scope(named<WalkHistoryFragment>()) {
-        viewModel { WalkHistoryViewModel(get()) }
+        viewModel { WalkHistoryViewModel(get(), get()) }
     }
 }
 
 fun mapWrapperFragmentModule() = module {
     scope(named<MapWrapperFragment>()) {
-        viewModel { MapWrapperViewModel(get()) }
+        viewModel { MapWrapperViewModel(get(), get()) }
     }
 }

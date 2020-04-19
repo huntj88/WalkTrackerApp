@@ -1,4 +1,4 @@
-package me.jameshunt.walkhistory
+package me.jameshunt.walkhistory.track
 
 import android.app.*
 import android.content.Context
@@ -13,7 +13,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import me.jameshunt.walkhistory.repo.LocationService
+import me.jameshunt.walkhistory.MainActivity
+import me.jameshunt.walkhistory.R
+import me.jameshunt.walkhistory.appModule
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.KoinContextHandler

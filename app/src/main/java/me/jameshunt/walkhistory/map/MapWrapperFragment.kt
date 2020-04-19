@@ -1,4 +1,4 @@
-package me.jameshunt.walkhistory
+package me.jameshunt.walkhistory.map
 
 import android.graphics.Color
 import android.os.Bundle
@@ -12,15 +12,16 @@ import com.google.android.libraries.maps.SupportMapFragment
 import com.google.android.libraries.maps.model.LatLng
 import com.google.android.libraries.maps.model.MarkerOptions
 import com.google.android.libraries.maps.model.PolylineOptions
+import kotlinx.android.synthetic.main.fragment_map_wrapper.*
 import kotlinx.coroutines.flow.map
+import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
 import org.koin.android.viewmodel.scope.viewModel
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
 class MapWrapperFragment : Fragment() {
 
-    // TODO: do not expose, make private
-    val viewModel by kLifecycleScope.viewModel<MapWrapperViewModel>(this)
+    private val viewModel by kLifecycleScope.viewModel<MapWrapperViewModel>(this)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,11 +30,15 @@ class MapWrapperFragment : Fragment() {
     ): View = inflater.inflate(R.layout.fragment_map_wrapper, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        selectWalkButton.setOnClickListener {
+            WalkHistoryFragment().show(fragmentManager!!, WalkHistoryFragment::class.simpleName)
+        }
+
         val mapFragment = when (val existing = getExistingMapFragment()) {
             null -> SupportMapFragment().also {
                 childFragmentManager
                     .beginTransaction()
-                    .replace(R.id.fragment_container, it, "map")
+                    .replace(R.id.fragment_container, it, SupportMapFragment::class.simpleName)
                     .commit()
             }
             else -> existing
@@ -62,25 +67,19 @@ class MapWrapperFragment : Fragment() {
                 map.uiSettings.isZoomControlsEnabled = true
             }
         }
-
-        // hardcoded walkId
-        viewModel.setSelectedWalk(1)
     }
 
-    private fun getExistingMapFragment(): SupportMapFragment? {
-        return childFragmentManager.findFragmentByTag("map") as? SupportMapFragment
-    }
+    private fun getExistingMapFragment(): SupportMapFragment? = childFragmentManager
+        .findFragmentByTag(SupportMapFragment::class.simpleName) as? SupportMapFragment
 }
 
-class MapWrapperViewModel(private val db: AppDatabase) : ViewModel() {
+class MapWrapperViewModel(
+    private val db: AppDatabase,
+    selectedWalkService: SelectedWalkService
+) : ViewModel() {
 
-    private val selectedWalk = MutableLiveData<Int>()
-    val coordinatesForSelectedWalk = selectedWalk
-        .asFlow()
+    val coordinatesForSelectedWalk = selectedWalkService
+        .selectedWalkId
         .map { db.locationTimestampDao().getLocationTimestampsForWalk(it) }
         .asLiveData(viewModelScope.coroutineContext)
-
-    fun setSelectedWalk(walkId: Int) {
-        selectedWalk.value = walkId
-    }
 }
