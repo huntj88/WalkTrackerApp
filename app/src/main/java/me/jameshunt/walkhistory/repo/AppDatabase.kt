@@ -2,8 +2,8 @@ package me.jameshunt.walkhistory.repo
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
-import java.time.format.DateTimeFormatterBuilder
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity
 data class Walk(
@@ -22,7 +22,7 @@ data class Walk(
 )
 data class LocationTimestamp(
     val walkId: Int,
-    val timestamp: Instant,
+    val timestamp: OffsetDateTime,
     val latitude: Double,
     val longitude: Double
 )
@@ -71,7 +71,7 @@ interface WalkDao {
 data class WalkWithTime(
     val walkId: Int,
     val json: String,
-    val timestamp: Instant
+    val timestamp: OffsetDateTime
 )
 
 @Database(entities = [Walk::class, LocationTimestamp::class], version = 1)
@@ -82,17 +82,15 @@ abstract class AppDatabase : RoomDatabase() {
 }
 
 class LocalDateTimeConverter {
-    private val formatter = DateTimeFormatterBuilder()
-        .appendInstant(3)
-        .toFormatter()
+    private val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
     @TypeConverter
-    fun toDate(dateString: String): Instant {
-        return Instant.parse(dateString)
+    fun toDate(dateString: String): OffsetDateTime {
+        return OffsetDateTime.parse(dateString)
     }
 
     @TypeConverter
-    fun toDateString(date: Instant): String {
+    fun toDateString(date: OffsetDateTime): String {
         return formatter.format(date)
     }
 }

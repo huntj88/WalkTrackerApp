@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
 import org.koin.android.viewmodel.scope.viewModel
-import java.time.Instant
+import java.time.OffsetDateTime
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
 
@@ -60,6 +60,7 @@ class TrackWalkFragment : ServiceAwareFragment() {
         }
 
         viewModel.uiInfo.observe(this) {
+            // TODO: use other values
             button.text = it.buttonText
         }
     }
@@ -83,7 +84,7 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
         .walkDao()
         .getCurrentWalk()
         .mapNotNull { it }
-        .mapNotNull {
+        .map {
             val locationTimeStampInfo = db
                 .locationTimestampDao()
                 .getInitialLocationTimestamp(it.walkId)
@@ -114,6 +115,6 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 data class UIInfo(
     val serviceRunning: Boolean,
     val walkId: Int,
-    val startTime: Instant,
+    val startTime: OffsetDateTime,
     val buttonText: String
 )

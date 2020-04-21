@@ -6,8 +6,8 @@ import androidx.room.Room
 import com.google.android.gms.location.LocationServices
 import me.jameshunt.walkhistory.map.MapWrapperFragment
 import me.jameshunt.walkhistory.map.MapWrapperViewModel
-import me.jameshunt.walkhistory.map.WalkHistoryFragment
-import me.jameshunt.walkhistory.map.WalkHistoryViewModel
+import me.jameshunt.walkhistory.map.WalkPickerDialog
+import me.jameshunt.walkhistory.map.WalkPickerViewModel
 import me.jameshunt.walkhistory.repo.AppDatabase
 import me.jameshunt.walkhistory.map.SelectedWalkService
 import me.jameshunt.walkhistory.track.*
@@ -58,8 +58,8 @@ fun trackWalkFragmentModule() = module {
 }
 
 fun walkHistoryFragmentModule() = module {
-    scope(named<WalkHistoryFragment>()) {
-        viewModel { WalkHistoryViewModel(get(), get()) }
+    scope(named<WalkPickerDialog>()) {
+        viewModel { WalkPickerViewModel(get(), get()) }
     }
 }
 

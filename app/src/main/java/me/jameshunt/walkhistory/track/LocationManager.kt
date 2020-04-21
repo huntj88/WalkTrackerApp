@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
 import me.jameshunt.walkhistory.repo.AppDatabase
 import me.jameshunt.walkhistory.repo.LocationTimestamp
-import java.time.Instant
+import java.time.OffsetDateTime
 
 class LocationManager(
     private val locationCollector: LocationCollector,
@@ -39,7 +39,7 @@ class LocationManager(
         db.locationTimestampDao().insert(
             LocationTimestamp(
                 walkId = walkId,
-                timestamp = Instant.now(),
+                timestamp = OffsetDateTime.now(),
                 latitude = latLng.latitude,
                 longitude = latLng.longitude
             )
@@ -50,7 +50,7 @@ class LocationManager(
 class LocationCollector(private val locationClient: FusedLocationProviderClient) {
     private val locationRequest = LocationRequest().apply {
         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        interval = 12_000
+        interval = 3_000
     }
 
     data class LatLong(val latitude: Double, val longitude: Double)

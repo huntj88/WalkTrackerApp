@@ -31,7 +31,7 @@ class MapWrapperFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         selectWalkButton.setOnClickListener {
-            WalkHistoryFragment().show(fragmentManager!!, WalkHistoryFragment::class.simpleName)
+            WalkPickerDialog().show(fragmentManager!!, WalkPickerDialog::class.simpleName)
         }
 
         val mapFragment = when (val existing = getExistingMapFragment()) {
