@@ -25,7 +25,7 @@ import kotlin.coroutines.CoroutineContext
 
 class TrackerForegroundService : Service(), CoroutineScope {
 
-    private val locationCollector: LocationCollector by inject()
+    private val locationManager: LocationManager by inject()
 
     private val broadcaster by lazy { AndroidServiceBroadCaster(this) }
 
@@ -69,7 +69,7 @@ class TrackerForegroundService : Service(), CoroutineScope {
         Log.d("service", "starting")
 
         launch {
-            locationCollector.collectLocationData()
+            locationManager.startCollectingWalkData()
         }
     }
 

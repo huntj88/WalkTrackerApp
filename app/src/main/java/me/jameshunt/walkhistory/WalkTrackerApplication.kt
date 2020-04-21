@@ -9,10 +9,8 @@ import me.jameshunt.walkhistory.map.MapWrapperViewModel
 import me.jameshunt.walkhistory.map.WalkHistoryFragment
 import me.jameshunt.walkhistory.map.WalkHistoryViewModel
 import me.jameshunt.walkhistory.repo.AppDatabase
-import me.jameshunt.walkhistory.track.LocationCollector
 import me.jameshunt.walkhistory.map.SelectedWalkService
-import me.jameshunt.walkhistory.track.TrackWalkFragment
-import me.jameshunt.walkhistory.track.TrackWalkViewModel
+import me.jameshunt.walkhistory.track.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -48,7 +46,8 @@ fun appModule(applicationContext: Context): Module {
 
         single { SelectedWalkService(get()) }
         single { LocationServices.getFusedLocationProviderClient(applicationContext) }
-        single { LocationCollector(get(), get()) }
+        single { LocationManager(get(), get()) }
+        single { LocationCollector(get()) }
     }
 }
 
