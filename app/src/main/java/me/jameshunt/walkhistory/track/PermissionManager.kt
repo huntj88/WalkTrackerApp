@@ -9,17 +9,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import me.jameshunt.walkhistory.MainActivity
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class PermissionManager(private val context: Activity) {
     private var onLocationGrant: ((PermissionResult) -> Unit)? = null
 
-    fun onLocationGranted(action: (PermissionResult) -> Unit) {
-        if(canUseLocation()) {
-            action(PermissionResult.Granted)
-        } else {
-            context.showDialogIfPossible(permission.ACCESS_FINE_LOCATION)
-            onLocationGrant = action
+    suspend fun getLocationPermission(): PermissionResult = suspendCoroutine {
+        onLocationGranted { result ->
+            it.resume(result)
         }
     }
 
@@ -45,6 +44,15 @@ class PermissionManager(private val context: Activity) {
                 }
             }
 
+    }
+
+    private fun onLocationGranted(action: (PermissionResult) -> Unit) {
+        if(canUseLocation()) {
+            action(PermissionResult.Granted)
+        } else {
+            context.showDialogIfPossible(permission.ACCESS_FINE_LOCATION)
+            onLocationGrant = action
+        }
     }
 
     private fun Activity.showDialogIfPossible(permissionString: String) {

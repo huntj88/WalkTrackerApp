@@ -34,7 +34,7 @@ class TrackWalkFragment : ServiceAwareFragment() {
     override fun onResume() {
         super.onResume()
 
-        ifPermissionUpdateService {
+        ifPermissionHandleStatus {
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.updateServiceStatus(isServiceRunning())
             }
@@ -51,7 +51,9 @@ class TrackWalkFragment : ServiceAwareFragment() {
                 val serviceRunning = isServiceRunning()
                 when (serviceRunning) {
                     true -> activity?.stopLocationService()
-                    false -> activity?.startLocationService()
+                    false -> activity?.startLocationService(onPermissionFailure = {
+                        button.text = "Permission Required Plz"
+                    })
                 }
                 viewModel.updateServiceStatus(!serviceRunning)
             }
@@ -62,7 +64,8 @@ class TrackWalkFragment : ServiceAwareFragment() {
         }
     }
 
-    private fun ifPermissionUpdateService(action: () -> Unit) {
+    // handle resume after android permission dialog goes away when granted/denied
+    private fun ifPermissionHandleStatus(action: () -> Unit) {
         if (canUseLocation) {
             action()
         } else if (requireActivity().permissionManager().canUseLocation()) {

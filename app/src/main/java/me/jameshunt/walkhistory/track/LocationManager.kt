@@ -21,18 +21,16 @@ class LocationManager(
 ) {
 
     suspend fun startCollectingWalkData() {
-        Log.d("starting walk", "method called")
         var walkId: Int? = null
         locationCollector.getLocationUpdates().collect { latLng ->
-            when (walkId == null) {
-                false -> insertLocation(walkId!!, latLng)
-                true -> db.withTransaction {
+            walkId
+                ?.let { insertLocation(it, latLng) }
+                ?: db.withTransaction {
                     walkId = db.walkDao().startAndGetNewWalk("").walkId
                     Log.d("starting walk", "$walkId")
 
                     insertLocation(walkId!!, latLng)
                 }
-            }
         }
     }
 
