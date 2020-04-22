@@ -72,7 +72,7 @@ class WalkPickerDialog : DialogFragment() {
                     val walkWithTime = walks[position]
 
                     findViewById<TextView>(R.id.walkNumber).text =
-                        "walk number: ${walkWithTime.walkId}"
+                        getString(R.string.walk_number, walkWithTime.walkId.toString())
 
                     findViewById<TextView>(R.id.walkDate).text = DateTimeFormatter
                         .ofLocalizedDate(FormatStyle.MEDIUM)

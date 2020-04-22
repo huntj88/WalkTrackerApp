@@ -10,10 +10,12 @@ import me.jameshunt.walkhistory.repo.WalkId
 class SelectedWalkService(private val appDatabase: AppDatabase) {
 
     lateinit var emitter: ProducerScope<WalkId>
-    val selectedWalkId = callbackFlow<WalkId> {
+    val selectedWalkId: Flow<WalkId> = callbackFlow<WalkId?> {
         emitter = this
-        awaitClose { Log.d("SelectedWalkService","closing") }
-    }.onStart { emit(appDatabase.walkDao().getNewestWalk().walkId) }
+        awaitClose { Log.d("SelectedWalkService", "closing") }
+    }.onStart {
+        emit(appDatabase.walkDao().getNewestWalk()?.walkId)
+    }.filterNotNull()
 
 
     suspend fun setSelected(walkId: WalkId) {
