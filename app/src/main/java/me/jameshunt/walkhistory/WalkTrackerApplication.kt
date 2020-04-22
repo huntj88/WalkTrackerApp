@@ -4,13 +4,15 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.google.android.gms.location.LocationServices
-import me.jameshunt.walkhistory.map.MapWrapperFragment
-import me.jameshunt.walkhistory.map.MapWrapperViewModel
-import me.jameshunt.walkhistory.map.WalkPickerDialog
-import me.jameshunt.walkhistory.map.WalkPickerViewModel
+import com.google.android.libraries.maps.MapView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import me.jameshunt.walkhistory.map.*
 import me.jameshunt.walkhistory.repo.AppDatabase
-import me.jameshunt.walkhistory.map.SelectedWalkService
-import me.jameshunt.walkhistory.track.*
+import me.jameshunt.walkhistory.track.LocationCollector
+import me.jameshunt.walkhistory.track.LocationManager
+import me.jameshunt.walkhistory.track.TrackWalkFragment
+import me.jameshunt.walkhistory.track.TrackWalkViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -22,6 +24,8 @@ class WalkTrackerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        preloadGoogleMapsDependencies()
+
         startKoin {
             androidContext(this@WalkTrackerApplication)
 
@@ -31,6 +35,20 @@ class WalkTrackerApplication : Application() {
                 walkHistoryFragmentModule(),
                 mapWrapperFragmentModule()
             )
+        }
+    }
+
+    // Fixing Later Map loading Delay
+    // preload google dependencies on background thread
+    private fun preloadGoogleMapsDependencies() {
+        GlobalScope.launch {
+            try {
+                val mv = MapView(applicationContext)
+                mv.onCreate(null)
+                mv.onPause()
+                mv.onDestroy()
+            } catch (ignored: Exception) {
+            }
         }
     }
 }
