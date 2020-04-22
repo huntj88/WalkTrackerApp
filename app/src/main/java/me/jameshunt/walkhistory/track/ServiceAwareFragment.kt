@@ -28,7 +28,7 @@ abstract class ServiceAwareFragment : Fragment() {
     suspend fun Activity.startLocationService(onPermissionFailure: () -> Unit) =
         when (permissionManager().getLocationPermission()) {
             PermissionResult.Granted -> {
-                Log.d("permission", "denied")
+                Log.d("permission", "granted")
                 ContextCompat.startForegroundService(
                     this@startLocationService,
                     Intent(this@startLocationService, TrackerForegroundService::class.java)

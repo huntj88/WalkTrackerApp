@@ -10,44 +10,44 @@
         android:id="@+id/elapsedTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="01 : 43 : 12"
         android:textSize="36sp"
         app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="01 : 43 : 12" />
 
     <TextView
         android:id="@+id/walkNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        tools:text="@string/walk_number"
-        app:layout_constraintBottom_toTopOf="@+id/startTime"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintEnd_toStartOf="@+id/startTime"
+        app:layout_constraintStart_toStartOf="@+id/button"
+        tools:text="@string/walk_number" />
 
     <TextView
         android:id="@+id/startTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        tools:text="@string/started_at"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/button"
+        app:layout_constraintStart_toEndOf="@+id/walkNumber"
+        tools:text="@string/started_at" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="300dp"
         android:layout_height="100dp"
         android:text="@string/working_on_it"
-        tools:text="@string/start"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/elapsedTime" />
+        app:layout_constraintTop_toBottomOf="@+id/elapsedTime"
+        tools:text="@string/start" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

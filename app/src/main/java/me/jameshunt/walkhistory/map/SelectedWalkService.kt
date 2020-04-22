@@ -17,6 +17,6 @@ class SelectedWalkService(private val appDatabase: AppDatabase) {
 
 
     suspend fun setSelected(walkId: WalkId) {
-        emitter.channel.send(walkId)
+        emitter.send(walkId)
     }
 }

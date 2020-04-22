@@ -7,10 +7,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.*
 import kotlinx.android.synthetic.main.fragment_track_walk.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
@@ -115,7 +112,7 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
     private val currentWalkInfo = db
         .walkDao()
         .getCurrentWalk()
-        .mapNotNull { it }
+        .filterNotNull()
         .map {
             val locationTimeStampInfo = db
                 .locationTimestampDao()
