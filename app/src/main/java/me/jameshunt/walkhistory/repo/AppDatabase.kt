@@ -5,9 +5,11 @@ import kotlinx.coroutines.flow.Flow
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+typealias WalkId = Int
+
 @Entity
 data class Walk(
-    @PrimaryKey(autoGenerate = true) val walkId: Int = 0,
+    @PrimaryKey(autoGenerate = true) val walkId: WalkId = 0,
     val json: String
 )
 
@@ -21,7 +23,7 @@ data class Walk(
     ]
 )
 data class LocationTimestamp(
-    val walkId: Int,
+    val walkId: WalkId,
     val timestamp: OffsetDateTime,
     val latitude: Double,
     val longitude: Double
@@ -30,10 +32,10 @@ data class LocationTimestamp(
 @Dao
 interface LocationTimestampDao {
     @Query("SELECT * FROM locationtimestamp WHERE walkId = :walkId")
-    suspend fun getLocationTimestampsForWalk(walkId: Int): List<LocationTimestamp>
+    suspend fun getLocationTimestampsForWalk(walkId: WalkId): List<LocationTimestamp>
 
     @Query("SELECT * FROM locationtimestamp WHERE walkId = :walkId ORDER BY timestamp ASC LIMIT 1")
-    suspend fun getInitialLocationTimestamp(walkId: Int): LocationTimestamp
+    suspend fun getInitialLocationTimestamp(walkId: WalkId): LocationTimestamp
 
     @Insert
     suspend fun insert(data: LocationTimestamp)
@@ -59,7 +61,7 @@ interface WalkDao {
 
     @Query(
         """
-        SELECT walkId, json, min(timestamp) AS timestamp FROM walk 
+        SELECT walkId, json, min(timestamp) AS startTime, max(timestamp) AS endTime FROM walk 
         JOIN locationtimestamp USING(walkId) 
         GROUP BY walkId 
         ORDER BY walkId DESC
@@ -69,9 +71,10 @@ interface WalkDao {
 }
 
 data class WalkWithTime(
-    val walkId: Int,
+    val walkId: WalkId,
     val json: String,
-    val timestamp: OffsetDateTime
+    val startTime: OffsetDateTime,
+    val endTime: OffsetDateTime
 )
 
 @Database(entities = [Walk::class, LocationTimestamp::class], version = 1)

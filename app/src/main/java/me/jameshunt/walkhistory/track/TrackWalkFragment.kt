@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
+import me.jameshunt.walkhistory.repo.WalkId
 import org.koin.android.viewmodel.scope.viewModel
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
@@ -129,19 +130,7 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
         }
         return@let currentWalkInfo
             .combine(everySecond) { (_, startTime), currentTime ->
-                val secondsDiff = startTime.until(currentTime, ChronoUnit.SECONDS)
-
-                val renderedSeconds = secondsDiff % 60
-                val minutes = secondsDiff / 60
-                val renderedMinutes = minutes % 60
-                val hours = minutes / 60
-
-                listOf(hours, renderedMinutes, renderedSeconds).joinToString(" : ") {
-                    when (it.toString().length == 1) {
-                        true -> "0$it"
-                        false -> "$it"
-                    }
-                }
+                startTime.until(currentTime, ChronoUnit.SECONDS).elapsedTimeString()
             }
             .combine(serviceStatus.asFlow()) { elapsedTime, isServiceRunning ->
                 when (isServiceRunning) {
@@ -155,7 +144,7 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 
 data class UIInfo(
     val serviceRunning: Boolean,
-    val walkId: Int,
+    val walkId: WalkId,
     val startTime: OffsetDateTime,
     val buttonText: String
 )

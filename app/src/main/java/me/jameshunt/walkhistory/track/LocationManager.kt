@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collect
 import me.jameshunt.walkhistory.repo.AppDatabase
 import me.jameshunt.walkhistory.repo.LocationTimestamp
+import me.jameshunt.walkhistory.repo.WalkId
 import java.time.OffsetDateTime
 
 class LocationManager(
@@ -21,7 +22,7 @@ class LocationManager(
 ) {
 
     suspend fun startCollectingWalkData() {
-        var walkId: Int? = null
+        var walkId: WalkId? = null
         locationCollector.getLocationUpdates().collect { latLng ->
             walkId
                 ?.let { insertLocation(it, latLng) }
@@ -34,7 +35,7 @@ class LocationManager(
         }
     }
 
-    private suspend fun insertLocation(walkId: Int, latLng: LocationCollector.LatLong) {
+    private suspend fun insertLocation(walkId: WalkId, latLng: LocationCollector.LatLong) {
         Log.d("inserting location", "$walkId: $latLng")
         db.locationTimestampDao().insert(
             LocationTimestamp(
