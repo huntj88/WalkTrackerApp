@@ -6,12 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.*
 import kotlinx.android.synthetic.main.fragment_track_walk.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
 import org.koin.android.viewmodel.scope.viewModel
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
 
@@ -63,6 +68,10 @@ class TrackWalkFragment : ServiceAwareFragment() {
             // TODO: use other values
             button.text = it.buttonText
         }
+
+        viewModel.elapsedTime.observe(this) {
+            elapsedTime.text = it
+        }
     }
 
     // handle resume after android permission dialog goes away when granted/denied
@@ -109,6 +118,38 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 
     fun updateServiceStatus(running: Boolean) {
         serviceStatus.value = running
+    }
+
+    val elapsedTime: LiveData<String> = let {
+        val everySecond = callbackFlow<OffsetDateTime> {
+            while (true) {
+                this.send(OffsetDateTime.now())
+                delay(1000)
+            }
+        }
+        return@let currentWalkInfo
+            .combine(everySecond) { (_, startTime), currentTime ->
+                val secondsDiff = startTime.until(currentTime, ChronoUnit.SECONDS)
+
+                val renderedSeconds = secondsDiff % 60
+                val minutes = secondsDiff / 60
+                val renderedMinutes = minutes % 60
+                val hours = minutes / 60
+
+                listOf(hours, renderedMinutes, renderedSeconds).joinToString(" : ") {
+                    when (it.toString().length == 1) {
+                        true -> "0$it"
+                        false -> "$it"
+                    }
+                }
+            }
+            .combine(serviceStatus.asFlow()) { elapsedTime, isServiceRunning ->
+                when (isServiceRunning) {
+                    true -> elapsedTime
+                    false -> "blaaah"
+                }
+            }
+            .asLiveData(viewModelScope.coroutineContext)
     }
 }
 
