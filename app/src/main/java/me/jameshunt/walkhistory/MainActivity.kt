@@ -18,7 +18,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         viewPager.adapter = object : FragmentStateAdapter(this) {
             override fun createFragment(position: Int): Fragment {
                 return when (position) {
@@ -28,9 +27,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun getItemCount(): Int {
-                return 2
-            }
+            override fun getItemCount(): Int = 2
         }
 
         viewPager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {

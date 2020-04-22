@@ -9,8 +9,8 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
@@ -104,7 +104,7 @@ class WalkPickerViewModel(
     val walkHistory = db
         .walkDao()
         .getCurrentWalk() // whenever a new walk is added, update the list reactively
-        .mapNotNull { it }
+        .filterNotNull()
         .map { db.walkDao().getWalksWithStartTime() }
         .asLiveData(viewModelScope.coroutineContext)
 

@@ -4,13 +4,13 @@
     <item
         android:id="@+id/track_walk"
         android:enabled="true"
-        android:icon="@drawable/common_full_open_on_phone"
+        android:icon="@drawable/ic_directions_walk_black_24dp"
         android:title="@string/track"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/map_walks"
         android:enabled="true"
-        android:icon="@drawable/maps_blue_dot"
+        android:icon="@drawable/ic_map_black_24dp"
         android:title="@string/map"
         app:showAsAction="ifRoom" />
 </menu>
