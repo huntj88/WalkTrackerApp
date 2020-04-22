@@ -31,14 +31,14 @@ class MapWrapperFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         selectWalkButton.setOnClickListener {
-            WalkPickerDialog().show(fragmentManager!!, WalkPickerDialog::class.simpleName)
+            WalkPickerDialog().show(fragmentManager!!, WalkPickerDialog::class.qualifiedName)
         }
 
         val mapFragment = when (val existing = getExistingMapFragment()) {
             null -> SupportMapFragment().also {
                 childFragmentManager
                     .beginTransaction()
-                    .replace(R.id.fragment_container, it, SupportMapFragment::class.simpleName)
+                    .replace(R.id.fragment_container, it, SupportMapFragment::class.qualifiedName)
                     .commit()
             }
             else -> existing
@@ -46,31 +46,26 @@ class MapWrapperFragment : Fragment() {
 
         viewModel.coordinatesForSelectedWalk.observe(this) { locations ->
             mapFragment.getMapAsync { map ->
-                map ?: return@getMapAsync
+                map?.apply {
+                    val path: List<LatLng> = locations.map { LatLng(it.latitude, it.longitude) }
 
-                map.clear()
-                val path: List<LatLng> = locations.map { LatLng(it.latitude, it.longitude) }
-
-                if (path.isNotEmpty()) {
-                    map.addPolyline(
+                    clear()
+                    addPolyline(
                         PolylineOptions()
                             .addAll(path)
                             .color(Color.BLUE)
                             .width(5f)
                     )
-
-                    map.addMarker(MarkerOptions().position(path.first()))
-                    map.addMarker(MarkerOptions().position(path.last()))
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(path.first(), 16f))
+                    addMarker(MarkerOptions().position(path.first()))
+                    addMarker(MarkerOptions().position(path.last()))
+                    moveCamera(CameraUpdateFactory.newLatLngZoom(path.first(), 17f))
                 }
-
-                map.uiSettings.isZoomControlsEnabled = true
             }
         }
     }
 
     private fun getExistingMapFragment(): SupportMapFragment? = childFragmentManager
-        .findFragmentByTag(SupportMapFragment::class.simpleName) as? SupportMapFragment
+        .findFragmentByTag(SupportMapFragment::class.qualifiedName) as? SupportMapFragment
 }
 
 class MapWrapperViewModel(
