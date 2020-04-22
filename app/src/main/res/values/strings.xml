@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Walk History</string>
+    <string name="select_walk">Select Walk</string>
+    <string name="working_on_it">Working on it</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="permission_required_plz">Permission Required Plz</string>
+    <string name="track">Track</string>
+    <string name="map">Map</string>
+    <string name="walk_number">Walk Number: %s</string>
+    <string name="started_at">Started at %s</string>
 </resources>

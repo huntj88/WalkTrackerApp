@@ -5,12 +5,12 @@
         android:id="@+id/track_walk"
         android:enabled="true"
         android:icon="@drawable/common_full_open_on_phone"
-        android:title="Track"
+        android:title="@string/track"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/map_walks"
         android:enabled="true"
         android:icon="@drawable/maps_blue_dot"
-        android:title="Map"
+        android:title="@string/map"
         app:showAsAction="ifRoom" />
 </menu>

@@ -17,6 +17,8 @@ import me.jameshunt.walkhistory.repo.AppDatabase
 import me.jameshunt.walkhistory.repo.WalkId
 import org.koin.android.viewmodel.scope.viewModel
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.temporal.ChronoUnit
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
@@ -49,16 +51,16 @@ class TrackWalkFragment : ServiceAwareFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (!canUseLocation) {
-            button.text = "Start"
+            button.text = getString(R.string.start)
         }
         button.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
-                button.text = "Working on it"
+                button.text = getString(R.string.working_on_it)
                 val serviceRunning = isServiceRunning()
                 when (serviceRunning) {
                     true -> activity?.stopLocationService()
                     false -> activity?.startLocationService(onPermissionFailure = {
-                        button.text = "Permission Required Plz"
+                        button.text = getString(R.string.permission_required_plz)
                     })
                 }
                 viewModel.updateServiceStatus(!serviceRunning)
@@ -66,8 +68,28 @@ class TrackWalkFragment : ServiceAwareFragment() {
         }
 
         viewModel.uiInfo.observe(this) {
-            // TODO: use other values
-            button.text = it.buttonText
+            when(it.serviceRunning) {
+                true -> {
+                    startTime.visibility = View.VISIBLE
+                    walkNumber.visibility = View.VISIBLE
+                }
+                false -> {
+                    startTime.visibility = View.INVISIBLE
+                    walkNumber.visibility = View.INVISIBLE
+                }
+            }
+            button.text = when (it.serviceRunning) {
+                true -> getString(R.string.stop)
+                false -> getString(R.string.start)
+            }
+
+            walkNumber.text = getString(R.string.walk_number, it.walkId.toString())
+
+            startTime.text = getString(
+                R.string.started_at, DateTimeFormatter
+                    .ofLocalizedTime(FormatStyle.SHORT)
+                    .format(it.startTime)
+            )
         }
 
         viewModel.elapsedTime.observe(this) {
@@ -104,15 +126,10 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 
     val uiInfo = currentWalkInfo
         .combine(serviceStatus.asFlow()) { (walkId, startTime), running ->
-            val buttonText = when (running) {
-                true -> "Stop"
-                false -> "Start"
-            }
             UIInfo(
                 serviceRunning = running,
                 walkId = walkId,
-                startTime = startTime,
-                buttonText = buttonText
+                startTime = startTime
             )
         }
         .asLiveData(viewModelScope.coroutineContext)
@@ -135,7 +152,7 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
             .combine(serviceStatus.asFlow()) { elapsedTime, isServiceRunning ->
                 when (isServiceRunning) {
                     true -> elapsedTime
-                    false -> "blaaah"
+                    false -> ""
                 }
             }
             .asLiveData(viewModelScope.coroutineContext)
@@ -145,6 +162,5 @@ class TrackWalkViewModel(private val db: AppDatabase) : ViewModel() {
 data class UIInfo(
     val serviceRunning: Boolean,
     val walkId: WalkId,
-    val startTime: OffsetDateTime,
-    val buttonText: String
+    val startTime: OffsetDateTime
 )
