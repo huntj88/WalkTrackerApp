@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.fragment_map_wrapper.*
 import kotlinx.coroutines.flow.map
 import me.jameshunt.walkhistory.R
 import me.jameshunt.walkhistory.repo.AppDatabase
+import me.jameshunt.walkhistory.repo.LocationTimestamp
 import org.koin.android.viewmodel.scope.viewModel
 import org.koin.android.scope.lifecycleScope as kLifecycleScope
 
@@ -76,5 +77,42 @@ class MapWrapperViewModel(
     val coordinatesForSelectedWalk = selectedWalkService
         .selectedWalkId
         .map { db.locationTimestampDao().getLocationTimestampsForWalk(it) }
+        .map { it.smoothData() }
         .asLiveData(viewModelScope.coroutineContext)
+
+
+
+    // naive implementation
+    // what if you get locations at irregular intervals?
+    private fun List<LocationTimestamp>.smoothData(): List<LocationTimestamp> = this
+        .mapIndexed { index, locationTimestamp ->
+            listOfNotNull(
+//                this.getOrNull(index - 6),
+//                this.getOrNull(index - 5),
+                this.getOrNull(index - 4),
+                this.getOrNull(index - 3),
+                this.getOrNull(index - 2),
+                this.getOrNull(index - 1),
+                locationTimestamp,
+                this.getOrNull(index + 1),
+                this.getOrNull(index + 2),
+                this.getOrNull(index + 3),
+                this.getOrNull(index + 4)
+//                this.getOrNull(index + 5),
+//                this.getOrNull(index + 6)
+            )
+        }
+        .map {
+            val summed = it.reduce { acc, locationTimestamp ->
+                acc.copy(
+                    latitude = acc.latitude + locationTimestamp.latitude,
+                    longitude = acc.longitude + locationTimestamp.longitude
+                )
+            }
+
+            summed.copy(
+                latitude = summed.latitude / it.size,
+                longitude = summed.longitude / it.size
+            )
+        }
 }
